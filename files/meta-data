@@ -1,0 +1,2 @@
+instance-id: devstack
+local-hostname: devstack.host.local

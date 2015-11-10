@@ -1,0 +1,34 @@
+#cloud-config
+
+users:
+  - default
+  - name: stack
+    lock_passwd: False
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    groups: [adm, audio, cdrom, dialout, dip, floppy, netdev, plugdev, sudo, video]
+    shell: /bin/bash
+    passwd: $6$somesalt$VUAmE.8Tsq1hSr3Eq.Efmil0n8b9aGOBqAn6d6LYaIFRqON6x0AyLXjmNO7Q4.sKSzgnmDfn54.dhOkXWry8F/
+    ssh-import-id: None
+write_files:
+  - content: |
+        #!/bin/sh
+        DEBIAN_FRONTEND=noninteractive sudo apt-get -qqy update
+        DEBIAN_FRONTEND=noninteractive sudo apt-get install -qqy git
+        sudo chown stack:stack /home/stack
+        cd /home/stack
+        git clone https://git.openstack.org/openstack-dev/devstack
+        cd devstack
+        echo '[[local|localrc]]' > local.conf
+        echo ADMIN_PASSWORD=password >> local.conf
+        echo DATABASE_PASSWORD=password >> local.conf
+        echo RABBIT_PASSWORD=password >> local.conf
+        echo SERVICE_PASSWORD=password >> local.conf
+        echo SERVICE_TOKEN=tokentoken >> local.conf
+        echo enable_plugin congress https://git.openstack.org/openstack/congress >> local.conf
+        echo enable_plugin manila https://github.com/openstack/manila >> local.conf
+        ./stack.sh
+    path: /home/stack/start.sh
+    permissions: 0755
+
+runcmd:
+  - su -l stack ./start.sh
